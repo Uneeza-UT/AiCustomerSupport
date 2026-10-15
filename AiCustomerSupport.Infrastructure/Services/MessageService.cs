@@ -9,6 +9,7 @@ using AiCustomerSupport.Application.Validations.Message;
 using AiCustomerSupport.Domain;
 using AiCustomerSupport.Domain.Enums;
 using AutoMapper;
+using Azure;
 
 namespace AiCustomerSupport.Infrastructure.Services
 {
@@ -123,7 +124,22 @@ namespace AiCustomerSupport.Infrastructure.Services
             // Fetch and save AI response to Customer message.
             if (senderType == SenderType.Customer)
             {
-                aiMessage = await GetAIResponseAsync(conversationId, userId, message);
+                var aiResponse = await GetAIResponseAsync(conversationId, userId, message);
+
+                // Change conversation status to Escalated based on the AI Response
+                if (aiResponse.RequiresHumanAgent)
+                {
+                    conversation.Status = ConversationStatus.Escalated;
+                    await _conversationRepository.SaveChangesAsync();
+                }
+
+                aiMessage = new Message
+                {
+                    ConversationId = conversationId,
+                    SenderType = SenderType.AI,
+                    SenderId = null,
+                    Content = aiResponse.Reply
+                };
                 await _messageRepository.CreateAsync(aiMessage);    
             }
 
@@ -148,7 +164,7 @@ namespace AiCustomerSupport.Infrastructure.Services
         }
 
 
-        private async Task<Message> GetAIResponseAsync(int conversationId, string userId, Message newMessage)
+        private async Task<AIResponseDto> GetAIResponseAsync(int conversationId, string userId, Message newMessage)
         {
             var customerMessages = await _messageRepository.GetByConversationIdAsync(conversationId);
 
@@ -166,17 +182,10 @@ namespace AiCustomerSupport.Infrastructure.Services
             var aiResponse = await _aiService.GenerateResponseAsync(
                 history, newMessage.Content, previousIntent?.Name);
 
-            var aiMessage = new Message
-            {
-                ConversationId = conversationId,
-                SenderType = SenderType.AI,
-                SenderId = null,
-                Content = aiResponse.Reply
-            };
-
+ 
             await AssignIntentToMessageAsync(aiResponse, previousIntent, newMessage);
 
-            return aiMessage;
+            return aiResponse;
         }
 
 

@@ -65,11 +65,25 @@ namespace AiCustomerSupport.Infrastructure.Services
                     - The intent name should be short and reusable across different customers. 
                       The description should explain the category, not merely repeat the customer's message.
 
-                   - Do not invent an intent for a greeting or acknowledgment.
+                    - Do not invent an intent for a greeting or acknowledgment.
+
+                    - Set requiresHumanAgent to true when the customer explicitly requests a human agent, 
+                     the issue requires human intervention, or you cannot adequately resolve the issue.
+
+                    - Set it to false when you can appropriately handle the customer's request.
+
+                    - Always return this property as a boolean.
+
+                    - The reply should contain the actual response shown to the customer. 
+                      If escalation is needed, explain that the customer will be connected with a human agent.
+
+                    - Return valid JSON matching the requested schema.
+
 
                    Return only valid JSON in this exact format:
                    {
                        "reply": "Your response to the customer",
+                       "requiresHumanAgent": true,
                        "intentDecision": "NewIntent",
                        "intentName": "Login Issue",
                        "intentDescription": "Problems preventing a user from logging into their account."
