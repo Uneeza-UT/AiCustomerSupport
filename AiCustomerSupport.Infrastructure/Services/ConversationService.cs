@@ -133,15 +133,11 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
         
-        public async Task ChangeStatusAsync(int id, ChangeConversationStatusDto dto)
+        public async Task AssignToAgentAsync(int id, AssignConversationToAgentDto dto)
         {
-            // Validate the dto.
-            var validator = new ChangeConversationStatusValidator();
-            var validationResult = await validator.ValidateAsync(dto);
-
-            if (validationResult.Errors.Any())
+            if (string.IsNullOrWhiteSpace(dto.AgentId))
             {
-                throw new BadRequestException("Invalid conversation status. ", validationResult);
+                throw new BadRequestException("Invalid agent Id.");
             }
 
 
@@ -152,7 +148,8 @@ namespace AiCustomerSupport.Infrastructure.Services
                 throw new NotFoundException(nameof(Conversation), id);
             }
 
-            conversation.Status = dto.Status;
+            conversation.AssignedAgentId = dto.AgentId;
+            conversation.Status = ConversationStatus.Assigned;
             await _conversationRepository.SaveChangesAsync();
         }
 

@@ -12,7 +12,7 @@ namespace AiCustomerSupport.Application.Contracts.Services
         Task<GetConversationDto> GetByIdAsync(int id);
         Task<List<GetUserInfo>> GetCustomersWithConversationsAsync();
         Task CreateAsync(CreateConversationDto dto);
-        Task ChangeStatusAsync(int id, ChangeConversationStatusDto dto);
+        Task AssignToAgentAsync(int id, AssignConversationToAgentDto dto);
         Task DeleteAsync(int id);
         Task<List<GetConversationDto>> SortAsync(SortDto sortDto, string userId);
         Task<List<GetConversationDto>> SearchByIntentAsync(SearchDto dto, string userId);
