@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Api/">
+    <Project Path="AiCustomerSupport.Api/AiCustomerSupport.Api.csproj" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="AiCustomerSupport.Application/AiCustomerSupport.Application.csproj" />
+    <Project Path="AiCustomerSupport.Domain/AiCustomerSupport.Domain.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="AiCustomerSupport.Identity/AiCustomerSupport.Identity.csproj" />
+    <Project Path="AiCustomerSupport.Infrastructure/AiCustomerSupport.Infrastructure.csproj" />
+    <Project Path="AiCustomerSupport.Persistence/AiCustomerSupport.Persistence.csproj" />
+  </Folder>
+</Solution>

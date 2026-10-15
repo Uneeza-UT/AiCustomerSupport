@@ -1,0 +1,6 @@
+@AiCustomerSupport.Api_HostAddress = http://localhost:5258
+
+GET {{AiCustomerSupport.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
