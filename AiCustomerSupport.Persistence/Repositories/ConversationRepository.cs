@@ -192,13 +192,5 @@ namespace AiCustomerSupport.Persistence.Repositories
 
             return query;
         }
-
-
-
-        public async Task DeleteAsync(Conversation entity)
-        {
-            _dbContext.Remove(entity);
-            await _dbContext.SaveChangesAsync();
-        }
     }
 }

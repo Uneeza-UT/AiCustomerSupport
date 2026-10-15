@@ -48,7 +48,6 @@ namespace AiCustomerSupport.Application.Contracts.Persistence
             int pageSize);
 
         Task<List<string>> GetCustomerIdsAsync();
-        Task DeleteAsync(Conversation entity);
     }
 
 }

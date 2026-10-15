@@ -3,13 +3,13 @@ using AiCustomerSupport.Application.Contracts.Persistence;
 using AiCustomerSupport.Application.Contracts.Services;
 using AiCustomerSupport.Application.DTOs.Common;
 using AiCustomerSupport.Application.DTOs.Message;
+using AiCustomerSupport.Application.DTOs.Notification;
 using AiCustomerSupport.Application.Enums;
 using AiCustomerSupport.Application.Exceptions;
 using AiCustomerSupport.Application.Validations.Message;
 using AiCustomerSupport.Domain;
 using AiCustomerSupport.Domain.Enums;
 using AutoMapper;
-using Azure;
 
 namespace AiCustomerSupport.Infrastructure.Services
 {
@@ -22,6 +22,7 @@ namespace AiCustomerSupport.Infrastructure.Services
         private readonly IAIService _aiService;
         private readonly IFileStorageService _fileStorageService;
         private readonly IChatHubService _chatHubService;
+        private readonly INotificationService _notificationService;
 
         public MessageService(IMapper mapper, 
             IMessageRepository messageRepository,
@@ -29,7 +30,8 @@ namespace AiCustomerSupport.Infrastructure.Services
             ICurrentUserService currentUserService,
             IAIService aiService,
             IFileStorageService fileStorageService,
-            IChatHubService chatHubService)
+            IChatHubService chatHubService,
+            INotificationService notificationService)
         {
             this._mapper = mapper;
             this._messageRepository = messageRepository;
@@ -38,6 +40,7 @@ namespace AiCustomerSupport.Infrastructure.Services
             this._aiService = aiService;
             this._fileStorageService = fileStorageService;
             this._chatHubService = chatHubService;
+            this._notificationService = notificationService;
         }
 
 
@@ -78,6 +81,9 @@ namespace AiCustomerSupport.Infrastructure.Services
             string errorMessage = "You can only send messages in conversations you created or are assigned to.";
 
             EnsureConversationAccess(conversation, userId, errorMessage);
+
+            var messages = await _messageRepository.GetByConversationIdAsync(conversationId);
+            bool isFirstMessage = messages.Count == 0;
 
 
             // Create a new message entity.
@@ -122,15 +128,26 @@ namespace AiCustomerSupport.Infrastructure.Services
             Message? aiMessage = null;
 
             // Fetch and save AI response to Customer message.
-            if (senderType == SenderType.Customer)
+            if (senderType == SenderType.Customer && conversation.Status != ConversationStatus.Escalated)
             {
-                var aiResponse = await GetAIResponseAsync(conversationId, userId, message);
+                var aiResponse = await GetAIResponseAsync(conversationId, userId, message, isFirstMessage);
 
-                // Change conversation status to Escalated based on the AI Response
+                if (isFirstMessage && !string.IsNullOrWhiteSpace(aiResponse.ConversationTitle))
+                {
+                    conversation.Title = aiResponse.ConversationTitle;
+                    await _conversationRepository.SaveChangesAsync();
+                }
+
+
+                // Change conversation status to Escalated based on the AI Response.
                 if (aiResponse.RequiresHumanAgent)
                 {
                     conversation.Status = ConversationStatus.Escalated;
                     await _conversationRepository.SaveChangesAsync();
+
+
+                    // Notify all admins about the escalated conversation.
+                    await _notificationService.NotifyEscalationAsync(conversation.Id, conversation.Title); 
                 }
 
                 aiMessage = new Message
@@ -140,31 +157,51 @@ namespace AiCustomerSupport.Infrastructure.Services
                     SenderId = null,
                     Content = aiResponse.Reply
                 };
+
                 await _messageRepository.CreateAsync(aiMessage);    
             }
 
 
-            // Send the new message to both the sender and receiver in real time via SignalR.
-            var messageDto = _mapper.Map<GetMessageDto>(message);      
+            var messageDto = _mapper.Map<GetMessageDto>(message);
 
-            string receiverId = userId == conversation.CustomerId
-                ? conversation.AssignedAgentId
-                : conversation.CustomerId;
+            // Send the user's message to themselves in real time.
+            await _chatHubService.SendMessageAsync(userId, messageDto);
 
-            await _chatHubService.SendMessageAsync(receiverId, messageDto);
-            
+            if (!string.IsNullOrWhiteSpace(conversation.AssignedAgentId))
+            {
+                // Send the user's message to the other participant in real time.
+
+                string receiverId = userId == conversation.CustomerId
+                    ? conversation.AssignedAgentId
+                    : conversation.CustomerId;
+
+                await _chatHubService.SendMessageAsync(receiverId, messageDto);
+
+
+                // Notify the other participant about the new message.
+                var notification = new SendNotificationDto
+                {
+                    ConversationId = conversation.Id,
+                    ReceiverId = receiverId,
+                    Message = $"You have received a new message in conversation \"{conversation.Title}\"."
+                };
+
+                await _notificationService.SendAsync(notification);
+            }
 
             if (aiMessage != null)
             {
+                // Send the AI's response to the user in real time.
                 var aiMessageDto = _mapper.Map<GetMessageDto>(aiMessage);
-                await _chatHubService.SendMessageAsync(receiverId, aiMessageDto);
+                await _chatHubService.SendMessageAsync(userId, aiMessageDto);
             }
 
             return messageDto;
         }
 
 
-        private async Task<AIResponseDto> GetAIResponseAsync(int conversationId, string userId, Message newMessage)
+        private async Task<AIResponseDto> GetAIResponseAsync(
+            int conversationId, string userId, Message newMessage, bool isFirstMessage)
         {
             var customerMessages = await _messageRepository.GetByConversationIdAsync(conversationId);
 
@@ -180,7 +217,7 @@ namespace AiCustomerSupport.Infrastructure.Services
             var history = _mapper.Map<List<AIMessageDto>>(customerMessages);
 
             var aiResponse = await _aiService.GenerateResponseAsync(
-                history, newMessage.Content, previousIntent?.Name);
+                history, newMessage.Content, isFirstMessage, previousIntent?.Name);
 
  
             await AssignIntentToMessageAsync(aiResponse, previousIntent, newMessage);

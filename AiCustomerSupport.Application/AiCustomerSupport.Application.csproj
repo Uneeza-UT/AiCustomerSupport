@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Validations\Conversation\" />
     <Folder Include="Validations\Intent\" />
   </ItemGroup>
 

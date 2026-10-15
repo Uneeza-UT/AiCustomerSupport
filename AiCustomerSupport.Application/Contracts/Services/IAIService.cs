@@ -7,6 +7,7 @@ namespace AiCustomerSupport.Application.Contracts.Services
         Task<AIResponseDto> GenerateResponseAsync(
             List<AIMessageDto> history,
             string newMessage,
+            bool isNewConversation,
             string? previousIntentName, 
             CancellationToken cancellationToken = default);
     }

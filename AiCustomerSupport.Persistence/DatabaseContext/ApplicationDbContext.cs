@@ -16,6 +16,7 @@ namespace AiCustomerSupport.Persistence.DatabaseContext
         public DbSet<Message> Messages { get; set; }
         public DbSet<Attachment> Attachments { get; set; }
         public DbSet<Intent> Intents { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -1,9 +1,7 @@
 ﻿using AiCustomerSupport.Application.Contracts.Identity;
-using AiCustomerSupport.Application.Contracts.Persistence;
 using AiCustomerSupport.Application.Models.Identity;
 using AiCustomerSupport.Identity.DbContext;
 using AiCustomerSupport.Identity.Models;
-using AiCustomerSupport.Identity.Repositories;
 using AiCustomerSupport.Identity.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +27,7 @@ namespace AiCustomerSupport.Identity
             {
                 options
                     .UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
-                    .ConfigureWarnings(warning => warning.Ignore(RelationalEventId.PendingModelChangesWarning);
+                    .ConfigureWarnings(warning => warning.Ignore(RelationalEventId.PendingModelChangesWarning));
             });
 
 

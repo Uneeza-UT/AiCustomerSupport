@@ -6,9 +6,9 @@ namespace AiCustomerSupport.Identity.Services
 {
     public class CurrentUserService : ICurrentUserService
     {
-        private readonly HttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CurrentUserService(HttpContextAccessor httpContextAccessor)
+        public CurrentUserService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }

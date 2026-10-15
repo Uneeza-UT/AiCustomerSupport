@@ -18,10 +18,11 @@ namespace AiCustomerSupport.Persistence
             });
 
 
-            services.AddScoped(typeof(IGenericRepository<>, typeof(GenericRepository<>));
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<IIntentRepository, IntentRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
 
             return services;

@@ -41,17 +41,5 @@ namespace AiCustomerSupport.Persistence.Repositories
                 .Include(m => m.Intent)
                 .ToListAsync();
         }
-
-
-
-        // Get a list of message entities with attachments
-        public async Task<List<Message>> GetAllByIdsWithAttachmentsAsync(List<int> ids)
-        {
-            return await _dbContext.Set<Message>()
-                .AsNoTracking()  
-                .Where(m => ids.Contains(m.Id))
-                .Include(m => m.Attachments)
-                .ToListAsync();
-        }
     }
 }

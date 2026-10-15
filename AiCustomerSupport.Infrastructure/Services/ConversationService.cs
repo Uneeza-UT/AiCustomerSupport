@@ -4,14 +4,15 @@ using AiCustomerSupport.Application.Contracts.Services;
 using AiCustomerSupport.Application.DTOs.Common;
 using AiCustomerSupport.Application.DTOs.Conversation;
 using AiCustomerSupport.Application.DTOs.Identity;
+using AiCustomerSupport.Application.DTOs.Notification;
 using AiCustomerSupport.Application.Enums;
 using AiCustomerSupport.Application.Exceptions;
 using AiCustomerSupport.Application.Validations.Common;
-using AiCustomerSupport.Application.Validations.Conversation;
 using AiCustomerSupport.Domain;
 using AiCustomerSupport.Domain.Enums;
-using AiCustomerSupport.Identity.Services;
+using AiCustomerSupport.Identity.Models;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using System.Linq.Expressions;
 
 namespace AiCustomerSupport.Infrastructure.Services
@@ -21,17 +22,23 @@ namespace AiCustomerSupport.Infrastructure.Services
         private readonly IMapper _mapper;
         private readonly IConversationRepository _conversationRepository;
         private readonly ICurrentUserService _currentUserService;
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly INotificationService _notificationService;
 
         public ConversationService(IMapper mapper,
             IConversationRepository conversationRepository,
             ICurrentUserService currentUserService,
-            UserService userService)
+            IUserService userService,
+            UserManager<ApplicationUser> userManager,
+            INotificationService notificationService)
         {
             _mapper = mapper;
             _conversationRepository = conversationRepository;
             _currentUserService = currentUserService;
             _userService = userService;
+            _userManager = userManager;
+            _notificationService = notificationService;
         }
 
 
@@ -116,18 +123,13 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task CreateAsync(CreateConversationDto dto)
+        public async Task CreateAsync()
         {
-            // Validate the dto.
-            var validator = new CreateConversationValidator();
-            var validationResult = await validator.ValidateAsync(dto);
-
-            if (validationResult.Errors.Any())
+            var conversation = new Conversation
             {
-                throw new BadRequestException("Invalid conversation entity. ", validationResult);
-            }
-
-            var conversation = _mapper.Map<Conversation>(dto);
+                CustomerId = _currentUserService.UserId,
+                Title = "New Conversation"
+            };
             await _conversationRepository.CreateAsync(conversation);
         }
 
@@ -151,6 +153,35 @@ namespace AiCustomerSupport.Infrastructure.Services
             conversation.AssignedAgentId = dto.AgentId;
             conversation.Status = ConversationStatus.Assigned;
             await _conversationRepository.SaveChangesAsync();
+
+
+            // Notify the assigned user and customer about the conversation assignment.
+            var user = await _userManager.FindByIdAsync(dto.AgentId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(nameof(ApplicationUser), dto.AgentId);
+            }
+
+            List <SendNotificationDto> notifications = new();
+
+            notifications.Add(new SendNotificationDto
+            {
+                ConversationId = conversation.Id,
+                ReceiverId = conversation.AssignedAgentId,
+                Message = $"You've been assigned a new conversation: {conversation.Title}."
+            });
+
+
+            notifications.Add(new SendNotificationDto
+            {
+                ConversationId = conversation.Id,
+                ReceiverId = conversation.CustomerId,
+                Message = $"Your conversation {conversation.Title} has been assigned to" +
+                    $" {user.FirstName} {user.LastName}."
+            });
+
+            await _notificationService.SendManyAsync(notifications);
         }
 
 

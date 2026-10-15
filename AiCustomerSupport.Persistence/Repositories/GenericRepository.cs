@@ -31,5 +31,12 @@ namespace AiCustomerSupport.Persistence.Repositories
         {
             await _dbContext.SaveChangesAsync();
         }
+
+
+        public async Task DeleteAsync(T entity)
+        {
+            _dbContext.Remove(entity);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

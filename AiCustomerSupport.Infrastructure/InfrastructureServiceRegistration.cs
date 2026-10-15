@@ -32,6 +32,7 @@ namespace AiCustomerSupport.Infrastructure
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<IMessageService, MessageService>();
             services.AddScoped<IIntentService, IntentService>();     
+            services.AddScoped<INotificationService, NotificationService>();     
             services.AddScoped<IFileStorageService, FileStorageService>();
             services.AddHttpClient<IAIService, AIService>();
             services.AddScoped<IChatHubService, ChatHubService>();

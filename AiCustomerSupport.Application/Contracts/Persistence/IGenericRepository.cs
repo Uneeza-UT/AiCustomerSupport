@@ -7,5 +7,6 @@ namespace AiCustomerSupport.Application.Contracts.Persistence
         Task<T?> GetByIdAsync(int id);
         Task<T> CreateAsync(T entity);
         Task SaveChangesAsync();
+        Task DeleteAsync(T entity);
     }
 }
