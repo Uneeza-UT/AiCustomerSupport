@@ -13,18 +13,13 @@ namespace AiCustomerSupport.Persistence.Repositories
         }
 
 
-        public async Task<IReadOnlyList<Message>> GetPagedByConversationIdAndUserIdAsync(
-            int conversationId, string userId, int pageNumber = 1, int pageSize = 10)
+        public async Task<IReadOnlyList<Message>> GetByConversationIdAndUserIdAsync(int conversationId, string userId)
         {
-            int skip = (pageNumber - 1) * pageSize;
-
             return await _dbContext.Set<Message>()
                 .AsNoTracking()   
                 .Where(m => m.ConversationId == conversationId &&
                     (m.Conversation.CustomerId == userId || m.Conversation.AssignedAgentId == userId))
                 .OrderBy(m => m.CreatedAt)
-                .Skip(skip)
-                .Take(pageSize)
                 .Include(m => m.Attachments)
                 .ToListAsync();
         }

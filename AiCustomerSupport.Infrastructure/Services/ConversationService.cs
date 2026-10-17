@@ -7,7 +7,6 @@ using AiCustomerSupport.Application.DTOs.Identity;
 using AiCustomerSupport.Application.DTOs.Notification;
 using AiCustomerSupport.Application.Enums;
 using AiCustomerSupport.Application.Exceptions;
-using AiCustomerSupport.Application.Validations.Common;
 using AiCustomerSupport.Domain;
 using AiCustomerSupport.Domain.Enums;
 using AiCustomerSupport.Identity.Models;
@@ -123,7 +122,7 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task CreateAsync()
+        public async Task<int> CreateAsync()
         {
             var conversation = new Conversation
             {
@@ -131,6 +130,8 @@ namespace AiCustomerSupport.Infrastructure.Services
                 Title = "New Conversation"
             };
             await _conversationRepository.CreateAsync(conversation);
+
+            return conversation.Id;
         }
 
 
@@ -224,16 +225,6 @@ namespace AiCustomerSupport.Infrastructure.Services
 
         public async Task<List<GetConversationDto>> SortAsync(SortDto sortDto, string userId)
         {
-            // Validate the dto.
-            var validator = new SortValidator();
-            var validationResult = await validator.ValidateAsync(sortDto);
-
-            if (validationResult.Errors.Any())
-            {
-                throw new BadRequestException("Invalid sort option. ", validationResult);
-            }
-
-
             var (customerId, assignedAgentId, excludeDeleted) = GetConversationAuthorizationScope(userId);
 
             bool descending;

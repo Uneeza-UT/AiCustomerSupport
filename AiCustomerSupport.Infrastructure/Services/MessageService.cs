@@ -1,7 +1,6 @@
 ﻿using AiCustomerSupport.Application.Contracts.Identity;
 using AiCustomerSupport.Application.Contracts.Persistence;
 using AiCustomerSupport.Application.Contracts.Services;
-using AiCustomerSupport.Application.DTOs.Common;
 using AiCustomerSupport.Application.DTOs.Message;
 using AiCustomerSupport.Application.DTOs.Notification;
 using AiCustomerSupport.Application.Enums;
@@ -44,7 +43,7 @@ namespace AiCustomerSupport.Infrastructure.Services
         }
 
 
-        public async Task<List<GetMessageDto>> GetAsync(int conversationId, PaginationDto dto)
+        public async Task<List<GetMessageDto>> GetAsync(int conversationId)
         {
             var conversation = await GetConversationOrThrowAsync(conversationId);
             string userId = _currentUserService.UserId;
@@ -53,8 +52,7 @@ namespace AiCustomerSupport.Infrastructure.Services
 
             EnsureConversationAccess(conversation, userId, errorMessage);
 
-            var messages = await _messageRepository.GetPagedByConversationIdAndUserIdAsync(
-                conversationId, userId, dto.PageNumber, dto.PageSize);
+            var messages = await _messageRepository.GetByConversationIdAndUserIdAsync(conversationId, userId);
 
             return _mapper.Map<List<GetMessageDto>>(messages);
         }
