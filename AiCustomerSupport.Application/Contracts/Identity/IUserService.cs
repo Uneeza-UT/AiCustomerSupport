@@ -4,6 +4,6 @@ namespace AiCustomerSupport.Application.Contracts.Identity
 {
     public interface IUserService
     {
-        Task<List<GetUserInfo>> GetByIdsAsync(List<string> userIds);
+        Task<List<GetUserInfo>> GetByIdsAsync(List<string> userIds, int pageNumber = 1, int pageSize = 10);
     }
 }

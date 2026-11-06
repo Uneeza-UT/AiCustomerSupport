@@ -103,9 +103,9 @@ namespace AiCustomerSupport.Persistence.Repositories
             bool descending,
             string? customerId,
             string? assignedAgentId,
-            bool excludeDeleted,  
-            int pageNumber,
-            int pageSize)
+            bool excludeDeleted,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             var query = GetConversationQuery(customerId, assignedAgentId, excludeDeleted);
 
@@ -124,8 +124,8 @@ namespace AiCustomerSupport.Persistence.Repositories
             string? customerId, 
             string? assignedAgentId,
             bool excludeDeleted,
-            int pageNumber,
-            int pageSize)
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             var query = GetConversationQuery(customerId, assignedAgentId, excludeDeleted);
 
@@ -145,8 +145,8 @@ namespace AiCustomerSupport.Persistence.Repositories
             string? customerId,
             string? assignedAgentId,
             bool excludeDeleted,
-            int pageNumber,
-            int pageSize)
+            int pageNumber = 1,
+            int pageSize = 10)
         {
             var query = GetConversationQuery(customerId, assignedAgentId, excludeDeleted);
 

@@ -113,10 +113,10 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task<List<GetUserInfo>> GetCustomersWithConversationsAsync()
+        public async Task<List<GetUserInfo>> GetCustomersWithConversationsAsync(PaginationDto paginationDto)
         {
             var customerIds = await _conversationRepository.GetCustomerIdsAsync();
-            var customers = await _userService.GetByIdsAsync(customerIds);
+            var customers = await _userService.GetByIdsAsync(customerIds, paginationDto.PageNumber, paginationDto.PageSize);
             return customers;      
         }
 
@@ -223,7 +223,7 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task<List<GetConversationDto>> SortAsync(SortDto sortDto, string userId)
+        public async Task<List<GetConversationDto>> SortAsync(SortDto sortDto, string userId, PaginationDto paginationDto)
         {
             var (customerId, assignedAgentId, excludeDeleted) = GetConversationAuthorizationScope(userId);
 
@@ -259,8 +259,6 @@ namespace AiCustomerSupport.Infrastructure.Services
                         "Invalid sort option.");
             }
 
-            var paginationDto = new PaginationDto();
-
             var conversations = await _conversationRepository
                 .SortConversationsAsync(
                     sortExpression,
@@ -276,18 +274,17 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task<List<GetConversationDto>> SearchByIntentAsync(SearchDto dto, string userId)
+        public async Task<List<GetConversationDto>> SearchByIntentAsync(
+            SearchDto dto, string userId, PaginationDto paginationDto)
         {
             string searchTerm = dto.SearchTerm?.Trim();
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await GetByUserAsync(new PaginationDto(), userId);
+                return await GetByUserAsync(paginationDto, userId);
             }
 
             var (customerId, assignedAgentId, excludeDeleted) = GetConversationAuthorizationScope(userId);
-
-            var paginationDto = new PaginationDto();
 
             var conversations = await _conversationRepository
                 .SearchByIntentAsync(
@@ -304,7 +301,7 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
         public async Task<List<GetConversationDto>> FilterByStatusAsync(
-            ConversationStatus status, string userId)
+            ConversationStatus status, string userId, PaginationDto paginationDto)
         {
             if (!Enum.IsDefined(typeof(ConversationStatus), status))
             {
@@ -312,8 +309,6 @@ namespace AiCustomerSupport.Infrastructure.Services
             }
 
             var (customerId, assignedAgentId, excludeDeleted) = GetConversationAuthorizationScope(userId);
-
-            var paginationDto = new PaginationDto();
 
             var conversations = await _conversationRepository
                 .FilterByStatusAsync(

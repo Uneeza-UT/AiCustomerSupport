@@ -10,13 +10,14 @@ namespace AiCustomerSupport.Application.Contracts.Services
         Task<ConversationAnalysisDto> GetAnalysisAsync();
         Task<List<GetConversationDto>> GetByUserAsync(PaginationDto dto, string userId);
         Task<GetConversationDto> GetByIdAsync(int id);
-        Task<List<GetUserInfo>> GetCustomersWithConversationsAsync();
+        Task<List<GetUserInfo>> GetCustomersWithConversationsAsync(PaginationDto paginationDto);
         Task<int> CreateAsync();
         Task AssignToAgentAsync(int id, AssignConversationToAgentDto dto);
         Task DeleteAsync(int id);
-        Task<List<GetConversationDto>> SortAsync(SortDto sortDto, string userId);
-        Task<List<GetConversationDto>> SearchByIntentAsync(SearchDto dto, string userId);
-        Task<List<GetConversationDto>> FilterByStatusAsync(ConversationStatus status, string userId);
+        Task<List<GetConversationDto>> SortAsync(SortDto sortDto, string userId, PaginationDto paginationDto);
+        Task<List<GetConversationDto>> SearchByIntentAsync(SearchDto dto, string userId, PaginationDto paginationDto);
+        Task<List<GetConversationDto>> FilterByStatusAsync(
+            ConversationStatus status, string userId, PaginationDto paginationDto);
     }
 
 }

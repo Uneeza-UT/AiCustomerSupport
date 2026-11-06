@@ -71,9 +71,9 @@ namespace AiCustomerSupport.Api.Controllers
         [HttpGet("customers")]
         [ProducesResponseType(200)]
         [ProducesResponseType(403)]
-        public async Task<ActionResult<List<GetUserInfo>>> GetCustomers()
+        public async Task<ActionResult<List<GetUserInfo>>> GetCustomers([FromQuery] PaginationDto paginationDto)
         {
-            var customers = await _conversationService.GetCustomersWithConversationsAsync();
+            var customers = await _conversationService.GetCustomersWithConversationsAsync(paginationDto);
             return Ok(customers);
         }
 
@@ -122,9 +122,12 @@ namespace AiCustomerSupport.Api.Controllers
 
         [HttpGet("{userId}/sort")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<List<GetConversationDto>>> Sort(string userId, [FromQuery] SortDto dto)
+        public async Task<ActionResult<List<GetConversationDto>>> Sort(
+            string userId, 
+            [FromQuery] SortDto dto,
+            [FromQuery] PaginationDto paginationDto)
         {
-            var conversations = await _conversationService.SortAsync(dto, userId);
+            var conversations = await _conversationService.SortAsync(dto, userId, paginationDto);
             return Ok(conversations);
         }
 
@@ -133,9 +136,12 @@ namespace AiCustomerSupport.Api.Controllers
 
         [HttpGet("{userId}/search")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<List<GetConversationDto>>> Search(string userId, [FromQuery] SearchDto dto)
+        public async Task<ActionResult<List<GetConversationDto>>> Search(
+            string userId, 
+            [FromQuery] SearchDto dto,
+            [FromQuery] PaginationDto paginationDto)
         {
-            var conversations = await _conversationService.SearchByIntentAsync(dto, userId);
+            var conversations = await _conversationService.SearchByIntentAsync(dto, userId, paginationDto);
             return Ok(conversations);
         }
 
@@ -145,9 +151,11 @@ namespace AiCustomerSupport.Api.Controllers
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<List<GetConversationDto>>> Filter
-            (string userId, [FromQuery] ConversationStatus status)
+            (string userId, 
+            [FromQuery] ConversationStatus status,
+            [FromQuery] PaginationDto paginationDto)
         {
-            var conversations = await _conversationService.FilterByStatusAsync(status, userId);
+            var conversations = await _conversationService.FilterByStatusAsync(status, userId, paginationDto);
             return Ok(conversations);
         }
     }

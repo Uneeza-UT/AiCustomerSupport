@@ -6,8 +6,8 @@ namespace AiCustomerSupport.Application.Contracts.Persistence
     public interface IIntentRepository : IGenericRepository<Intent>
     {
         Task<IReadOnlyList<Intent>> GetPagedAsync(int pageNumber = 1, int pageSize = 10);
-        Task<IReadOnlyList<Intent>> SearchAsync(string searchTerm);
+        Task<IReadOnlyList<Intent>> SearchAsync(string searchTerm, int pageNumber = 1, int pageSize = 10);
         Task<IReadOnlyList<Intent>> SortAsync<TKey>(
-            bool descending, Expression<Func<Intent, TKey>> keySelector, int pageNumber, int pageSize);
+            bool descending, Expression<Func<Intent, TKey>> keySelector, int pageNumber = 1, int pageSize = 10);
     }
 }

@@ -7,8 +7,8 @@ namespace AiCustomerSupport.Application.Contracts.Services
     {
         Task<List<GetIntentDto>> GetAsync(PaginationDto dto);
         Task<GetIntentDto> GetByIdAsync(int id);
-        Task<List<GetIntentDto>> SortAsync(SortDto dto);
-        Task<List<GetIntentDto>> SearchAsync(SearchDto dto);
+        Task<List<GetIntentDto>> SortAsync(SortDto dto, PaginationDto paginationDto);
+        Task<List<GetIntentDto>> SearchAsync(SearchDto dto, PaginationDto paginationDto);
     }
 
 }

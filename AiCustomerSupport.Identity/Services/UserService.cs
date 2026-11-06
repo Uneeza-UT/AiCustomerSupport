@@ -15,7 +15,7 @@ namespace AiCustomerSupport.Identity.Services
             _userManager = userManager;
         }
 
-        public async Task<List<GetUserInfo>> GetByIdsAsync(List<string> userIds)
+        public async Task<List<GetUserInfo>> GetByIdsAsync(List<string> userIds, int pageNumber = 1, int pageSize = 10)
         {
             return await _userManager.Users
                 .Where(u => userIds.Contains(u.Id))
@@ -26,6 +26,8 @@ namespace AiCustomerSupport.Identity.Services
                     LastName = u.LastName,
                     EmailAddress = u.Email
                 })
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
     }

@@ -43,7 +43,7 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task<List<GetIntentDto>> SortAsync(SortDto dto)
+        public async Task<List<GetIntentDto>> SortAsync(SortDto dto, PaginationDto paginationDto)
         {
             bool descending;
             Expression<Func<Intent, object>> sortExpression;
@@ -77,7 +77,6 @@ namespace AiCustomerSupport.Infrastructure.Services
                         "Invalid sort option.");
             }
 
-            var paginationDto = new PaginationDto();
             var intents = await _intentRepository
                 .SortAsync(
                     descending,
@@ -90,13 +89,13 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
 
-        public async Task<List<GetIntentDto>> SearchAsync(SearchDto dto)
+        public async Task<List<GetIntentDto>> SearchAsync(SearchDto dto, PaginationDto paginationDto)
         {
             string searchTerm = dto.SearchTerm?.Trim();
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                return await GetAsync(new PaginationDto());
+                return await GetAsync(paginationDto);
             }
 
             var intents = await _intentRepository.SearchAsync(searchTerm);

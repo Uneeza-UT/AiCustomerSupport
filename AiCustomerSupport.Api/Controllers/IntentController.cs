@@ -58,9 +58,11 @@ namespace AiCustomerSupport.Api.Controllers
 
         [HttpGet("sort")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<List<GetIntentDto>>> Sort([FromQuery] SortDto dto)
+        public async Task<ActionResult<List<GetIntentDto>>> Sort(
+            [FromQuery] SortDto dto, 
+            [FromQuery] PaginationDto paginationDto)
         {
-            var intents = await _intentService.SortAsync(dto);
+            var intents = await _intentService.SortAsync(dto, paginationDto);
             return Ok(intents);
         }
 
@@ -69,9 +71,11 @@ namespace AiCustomerSupport.Api.Controllers
 
         [HttpGet("search")]
         [ProducesResponseType(200)]
-        public async Task<ActionResult<List<GetIntentDto>>> Search([FromQuery] SearchDto dto)
+        public async Task<ActionResult<List<GetIntentDto>>> Search(
+            [FromQuery] SearchDto dto, 
+            [FromQuery] PaginationDto paginationDto)
         {
-            var intents = await _intentService.SearchAsync(dto);
+            var intents = await _intentService.SearchAsync(dto, paginationDto);
             return Ok(intents);
         }
     }

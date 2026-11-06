@@ -28,24 +28,24 @@ namespace AiCustomerSupport.Application.Contracts.Persistence
             string? customerId,
             string? assignedAgentId,
             bool excludeDeleted,
-            int pageNumber,
-            int pageSize);
+            int pageNumber = 1,
+            int pageSize = 10);
 
         Task<IReadOnlyList<Conversation>> SearchByIntentAsync(
             string searchTerm,
             string? customerId,
             string? assignedAgentId,
             bool excludeDeleted,
-            int pageNumber,
-            int pageSize);
+            int pageNumber = 1,
+            int pageSize = 10);
 
         Task<IReadOnlyList<Conversation>> FilterByStatusAsync(
             ConversationStatus status,
             string? customerId,
             string? assignedAgentId,
             bool excludeDeleted,
-            int pageNumber,
-            int pageSize);
+            int pageNumber = 1,
+            int pageSize = 10);
 
         Task<List<string>> GetCustomerIdsAsync();
     }

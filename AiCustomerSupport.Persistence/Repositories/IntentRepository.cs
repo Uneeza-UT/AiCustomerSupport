@@ -25,19 +25,21 @@ namespace AiCustomerSupport.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IReadOnlyList<Intent>> SearchAsync(string searchTerm)
+        public async Task<IReadOnlyList<Intent>> SearchAsync(string searchTerm, int pageNumber = 1, int pageSize = 10)
         {
             return await _dbContext.Set<Intent>()
                 .AsNoTracking()
                 .Where(i =>
                     i.Name.Contains(searchTerm) ||
                     i.Description.Contains(searchTerm))
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
 
 
         public async Task<IReadOnlyList<Intent>> SortAsync<TKey>(
-            bool descending, Expression<Func<Intent, TKey>> keySelector, int pageNumber, int pageSize)
+            bool descending, Expression<Func<Intent, TKey>> keySelector, int pageNumber = 1, int pageSize = 10)
         {
             var query = _dbContext.Set<Intent>().AsNoTracking();
             query = descending ? query.OrderByDescending(keySelector) : query.OrderBy(keySelector);

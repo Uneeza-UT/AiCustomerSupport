@@ -1,6 +1,4 @@
-﻿using System.Linq.Expressions;
-
-namespace AiCustomerSupport.Application.Contracts.Persistence
+﻿namespace AiCustomerSupport.Application.Contracts.Persistence
 {
     public interface IGenericRepository<T> where T : class
     {
