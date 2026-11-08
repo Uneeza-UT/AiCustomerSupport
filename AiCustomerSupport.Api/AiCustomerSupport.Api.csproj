@@ -18,6 +18,10 @@
   <ItemGroup>
     <Folder Include="wwwroot\attachments\" />
   </ItemGroup>
+  
+    <ItemGroup>
+    <EmbeddedResource Include="Swagger\index.html" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AiCustomerSupport.Application\AiCustomerSupport.Application.csproj" />
