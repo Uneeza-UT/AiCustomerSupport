@@ -166,23 +166,74 @@
         <script src="./swagger-ui-standalone-preset.js"></script>
 
         <script>
-
             window.onload = function () {
 
                 var configObject = JSON.parse('%(ConfigObject)');
 
                 configObject.dom_id = "#swagger-ui";
+
                 configObject.presets = [
                     SwaggerUIBundle.presets.apis,
                     SwaggerUIStandalonePreset
                 ];
 
                 configObject.layout = "StandaloneLayout";
+
+                // Automatically attach JWT to every API request
+                configObject.requestInterceptor = function (request) {
+
+                    const token = localStorage.getItem("jwt_token");
+
+                    if (token) {
+                        request.headers = request.headers || {};
+                        request.headers["Authorization"] = "Bearer " + token;
+                    }
+
+                    return request;
+                };
+
+
+                // Capture JWT after successful login
+                configObject.responseInterceptor = function (response) {
+
+                    if (
+                        response.url &&
+                        response.url.includes("/api/Auth/login") &&
+                        response.status >= 200 &&
+                        response.status < 300
+                    ) {
+                        try {
+                            const body = JSON.parse(response.text);
+                            const token = body?.token;
+
+                            if (token) {
+
+                                localStorage.setItem("jwt_token", token);
+
+                                console.log("JWT saved successfully.");
+
+                                // Also update Swagger's Authorize button
+                                if (window.ui) {
+                                    window.ui.preauthorizeApiKey(
+                                        "Bearer",
+                                        token
+                                    );
+                                }
+                            }
+
+                        } catch (error) {
+                            console.error("JWT extraction failed:", error);
+                        }
+                    }
+
+                    return response;
+                };
+
+
                 window.ui = SwaggerUIBundle(configObject);
 
                 window.dispatchEvent(new Event("swagger-ready"));
-            }
-
+            };
         </script>
 
 
