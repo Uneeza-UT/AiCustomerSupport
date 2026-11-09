@@ -54,7 +54,7 @@ namespace AiCustomerSupport.Persistence.Repositories
 
             return await _dbContext.Set<Conversation>()
                 .AsNoTracking()
-                .Where(c => c.AssignedAgentId == agentUserId)
+                .Where(c => c.AssignedAgentId == agentUserId && !c.IsDeleted)
                 .OrderByDescending(c => c.CreatedAt)
                 .Skip(skip)
                 .Take(pageSize)
@@ -71,13 +71,13 @@ namespace AiCustomerSupport.Persistence.Repositories
                 Total = await _dbContext.Set<Conversation>().CountAsync(),
 
                 Active = await _dbContext.Set<Conversation>()
-                    .CountAsync(c => c.Status == ConversationStatus.Active),
+                    .CountAsync(c => c.Status == ConversationStatus.Active && !c.IsDeleted),
 
                 Escalated = await _dbContext.Set<Conversation>()
-                    .CountAsync(c => c.Status == ConversationStatus.Escalated),
+                    .CountAsync(c => c.Status == ConversationStatus.Escalated && !c.IsDeleted),
 
                 Assigned = await _dbContext.Set<Conversation>()
-                    .CountAsync(c => c.Status == ConversationStatus.Assigned),
+                    .CountAsync(c => c.Status == ConversationStatus.Assigned&& !c.IsDeleted),
 
                 MostCommonIntent = await _dbContext.Set<Message>()
                     .Where(m => m.Intent != null)
@@ -163,6 +163,7 @@ namespace AiCustomerSupport.Persistence.Repositories
         {
             return await _dbContext.Set<Conversation>()
                 .AsNoTracking()
+                .Where(c => !c.IsDeleted)
                 .Select(c => c.CustomerId)
                 .Distinct()
                 .ToListAsync();

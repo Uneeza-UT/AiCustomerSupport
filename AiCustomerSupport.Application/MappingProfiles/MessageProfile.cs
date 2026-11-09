@@ -8,7 +8,11 @@ namespace AiCustomerSupport.Application.MappingProfiles
     {
         public MessageProfile()
         {
-            CreateMap<Message, GetMessageDto>();
+            CreateMap<Message, GetMessageDto>()
+                .ForMember(
+                    dest => dest.CustomerId,
+                    opt => opt.MapFrom(src => src.Conversation.CustomerId)
+                );
             CreateMap<Message, AIMessageDto>();
         }
     }

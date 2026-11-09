@@ -1,7 +1,7 @@
 ﻿window.addEventListener("swagger-ready", async () => {
     let currentUserId = null;
     let token = null;
-    let currentTicketId = null;
+    let currentConversationId = null;
 
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/hubs/support-chat", {
@@ -16,7 +16,7 @@
 
                 const payload = JSON.parse(atob(token.split(".")[1]))
 
-                currentUserId = payload.uid;
+                currentUserId = payload.UserId;
 
                 return token;
             }
@@ -30,8 +30,8 @@
         messageElement.classList.add("message");
         messageElement.dataset.messageId = message.id;
 
-        if (message.senderId === message.ticket.customerId) {
-            if (currentUserId === message.ticket.customerId) {
+        if (message.senderId === message.customerId) {
+            if (currentUserId === message.customerId) {
                 messageElement.classList.add("message-sent");
             }
 
@@ -42,7 +42,7 @@
 
 
         else {
-            if (currentUserId === message.ticket.customerId) {
+            if (currentUserId === message.customerId) {
                 messageElement.classList.add("message-received");
             }
 
@@ -79,11 +79,11 @@
 
 
 
-    async function loadMessages(ticketId) {
+    async function loadMessages(conversationId) {
 
         document.getElementById("messages").innerHTML = "";
 
-        const response = await fetch(`/api/ticket/${ticketId}/messages`, {
+        const response = await fetch(`/api/conversation/${conversationId}/messages`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -107,7 +107,7 @@
 
     connection.on("ReceiveMessage", message => {
 
-        if (message.ticketId !== currentTicketId) {
+        if (message.conversationId !== currentConversationId) {
             return;
         }
 
@@ -147,16 +147,16 @@
 
     document.getElementById("messages-button")
         .addEventListener("click", async () => {
-            const ticketId = document.getElementById("ticket-id").value;
+            const conversationId = document.getElementById("conversation-id").value;
 
-            if (!ticketId) {
-                console.error("Please enter a ticket ID.");
+            if (!conversationId) {
+                console.error("Please enter a conversation ID.");
                 return;
             }
 
-            currentTicketId = Number(ticketId);
+            currentConversationId = Number(conversationId);
 
-            await loadMessages(ticketId);
+            await loadMessages(conversationId);
         })    
     
 });

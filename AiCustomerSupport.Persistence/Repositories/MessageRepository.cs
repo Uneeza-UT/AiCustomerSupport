@@ -21,6 +21,7 @@ namespace AiCustomerSupport.Persistence.Repositories
                     (m.Conversation.CustomerId == userId || m.Conversation.AssignedAgentId == userId))
                 .OrderBy(m => m.CreatedAt)
                 .Include(m => m.Attachments)
+                .Include(m => m.Conversation)
                 .ToListAsync();
         }
 

@@ -39,7 +39,7 @@ namespace AiCustomerSupport.Api.Controllers
         public async Task<ActionResult> Post(int conversationId, [FromForm] CreateMessageDto dto)
         {
             var response = await _messageService.SendAsync(conversationId, dto);
-            return CreatedAtAction(nameof(Get), new { id = response });
+            return StatusCode(StatusCodes.Status201Created, response);
         }
     }
 }

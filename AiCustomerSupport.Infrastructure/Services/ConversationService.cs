@@ -93,9 +93,15 @@ namespace AiCustomerSupport.Infrastructure.Services
 
             bool isAuthorized = role switch
             {
-                "Admin" => true,
+                "Admin" => conversation.IsDeleted
+                    ? throw new NotFoundException(nameof(Conversation), id)
+                    : true,
 
-                "Agent" => userId == conversation.AssignedAgentId,
+                "Agent" => conversation.IsDeleted
+                    ? throw new NotFoundException(nameof(Conversation), id)
+                    : conversation.AssignedAgentId != userId
+                    ? throw new ForbiddenException("You are not assigned to this conversation.")
+                    : true,
 
                 "Customer" => userId == conversation.CustomerId,
 
@@ -138,18 +144,36 @@ namespace AiCustomerSupport.Infrastructure.Services
         
         public async Task AssignToAgentAsync(int id, AssignConversationToAgentDto dto)
         {
+            var conversation = await _conversationRepository.GetByIdAsync(id);
+
+            if (conversation == null || conversation.IsDeleted)
+            {
+                throw new NotFoundException(nameof(Conversation), id);
+            }
+
+
+            var user = await _userManager.FindByIdAsync(dto.AgentId);
+
+            if (user == null)
+            {
+                throw new NotFoundException(nameof(ApplicationUser), dto.AgentId);
+            }
+
+
+
+            var role = await _userManager.GetRolesAsync(user);
+
+            if (!role.Contains("Agent") && !role.Contains("Admin"))
+            {
+                throw new BadRequestException("Conversations can only be assigned to agents or admins.");
+            }
+
+
             if (string.IsNullOrWhiteSpace(dto.AgentId))
             {
                 throw new BadRequestException("Invalid agent Id.");
             }
-
-
-            var conversation = await _conversationRepository.GetByIdAsync(id);
-
-            if (conversation == null)
-            {
-                throw new NotFoundException(nameof(Conversation), id);
-            }
+         
 
             conversation.AssignedAgentId = dto.AgentId;
             conversation.Status = ConversationStatus.Assigned;
@@ -157,12 +181,7 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
             // Notify the assigned user and customer about the conversation assignment.
-            var user = await _userManager.FindByIdAsync(dto.AgentId);
-
-            if (user == null)
-            {
-                throw new NotFoundException(nameof(ApplicationUser), dto.AgentId);
-            }
+            
 
             List <SendNotificationDto> notifications = new();
 
@@ -193,7 +212,7 @@ namespace AiCustomerSupport.Infrastructure.Services
             var role = _currentUserService.UserRole;
             var conversation = await _conversationRepository.GetByIdAsync(id);
 
-            if (conversation == null)
+            if (conversation == null || conversation.IsDeleted)
             {
                 throw new NotFoundException(nameof(Conversation), id);
             }
@@ -336,8 +355,12 @@ namespace AiCustomerSupport.Infrastructure.Services
                 case "Admin":
                     return (userId, null, true);
 
-                case "Agent":
+                case "Agent" when userId == currentUserId:
                     return (null, currentUserId, true);
+
+                case "Agent":
+                    throw new ForbiddenException(
+                        "You can only view conversations assigned to you.");
 
                 case "Customer" when userId == currentUserId:
                     return (currentUserId, null, false);

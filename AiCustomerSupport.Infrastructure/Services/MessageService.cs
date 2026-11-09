@@ -9,6 +9,7 @@ using AiCustomerSupport.Application.Validations.Message;
 using AiCustomerSupport.Domain;
 using AiCustomerSupport.Domain.Enums;
 using AutoMapper;
+using System.Data;
 
 namespace AiCustomerSupport.Infrastructure.Services
 {
@@ -277,6 +278,9 @@ namespace AiCustomerSupport.Infrastructure.Services
         // Gets a conversation or throws NotFoundException if it doesn't exist.
         private async Task<Conversation> GetConversationOrThrowAsync(int id)
         {
+            string userId = _currentUserService.UserId;
+            string userRole = _currentUserService.UserRole;
+
             var conversation = await _conversationRepository.GetByIdAsync(id);
 
             if (conversation == null)
@@ -284,7 +288,21 @@ namespace AiCustomerSupport.Infrastructure.Services
                 throw new NotFoundException(nameof(Conversation), id);
             }
 
-            return conversation;
+
+            return userRole switch
+            {
+                "Admin" => conversation.IsDeleted
+                    ? throw new NotFoundException(nameof(Conversation), id)
+                    : conversation,
+
+                "Agent" => conversation.IsDeleted
+                    ? throw new NotFoundException(nameof(Conversation), id)
+                    : conversation,
+
+                "Customer" => conversation,
+
+                _ => throw new NotFoundException(nameof(Conversation), id)
+            };
         }
 
 

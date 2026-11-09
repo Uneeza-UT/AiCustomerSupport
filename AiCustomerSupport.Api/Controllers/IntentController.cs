@@ -9,7 +9,7 @@ namespace AiCustomerSupport.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,Agent")]
     public class IntentController : ControllerBase
     {
         private readonly IIntentService _intentService;
@@ -21,7 +21,6 @@ namespace AiCustomerSupport.Api.Controllers
 
 
 
-        [Authorize(Roles = "Admin,Agent")]
         [HttpGet]
         [ProducesResponseType(200)]
         [ProducesResponseType(403)]
@@ -43,7 +42,6 @@ namespace AiCustomerSupport.Api.Controllers
 
 
 
-        [Authorize(Roles = "Admin,Agent")]
         [HttpGet("{id}")]
         [ProducesResponseType(200)]
         [ProducesResponseType(403)]

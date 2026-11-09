@@ -1,4 +1,5 @@
 ﻿using AiCustomerSupport.Application.DTOs.Attachment;
+using AiCustomerSupport.Application.DTOs.Conversation;
 using AiCustomerSupport.Domain.Enums;
 
 namespace AiCustomerSupport.Application.DTOs.Message
@@ -11,6 +12,7 @@ namespace AiCustomerSupport.Application.DTOs.Message
         public string? SenderId { get; set; }
         public string? Content { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string CustomerId { get; set; }
         public List<GetAttachmentDto> Attachments { get; set; } = new List<GetAttachmentDto>();
     }
 }
