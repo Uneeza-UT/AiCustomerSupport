@@ -14,10 +14,6 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\attachments\" />
-  </ItemGroup>
   
     <ItemGroup>
     <EmbeddedResource Include="Swagger\index.html" />
