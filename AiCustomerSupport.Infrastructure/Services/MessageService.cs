@@ -127,7 +127,9 @@ namespace AiCustomerSupport.Infrastructure.Services
             Message? aiMessage = null;
 
             // Fetch and save AI response to Customer message.
-            if (senderType == SenderType.Customer && conversation.Status != ConversationStatus.Escalated)
+            if (senderType == SenderType.Customer && conversation.Status !=
+                ConversationStatus.Escalated &&
+                string.IsNullOrWhiteSpace(conversation.AssignedAgentId))
             {
                 var aiResponse = await GetAIResponseAsync(conversationId, userId, message, isFirstMessage);
 
@@ -146,7 +148,17 @@ namespace AiCustomerSupport.Infrastructure.Services
 
 
                     // Notify all admins about the escalated conversation.
-                    await _notificationService.NotifyEscalationAsync(conversation.Id, conversation.Title); 
+                    await _notificationService.NotifyEscalationAsync(conversation.Id, conversation.Title);
+
+
+                    var notification = new SendNotificationDto
+                    {
+                        ConversationId = conversation.Id,
+                        ReceiverId = conversation.CustomerId,
+                        Message = "Your conversation has been escalated to our support team. A human agent will assist you shortly."
+                    };
+
+                    await _notificationService.SendAsync(notification);
                 }
 
                 aiMessage = new Message
@@ -157,25 +169,20 @@ namespace AiCustomerSupport.Infrastructure.Services
                     Content = aiResponse.Reply
                 };
 
-                await _messageRepository.CreateAsync(aiMessage);    
+                await _messageRepository.CreateAsync(aiMessage);
             }
 
 
             var messageDto = _mapper.Map<GetMessageDto>(message);
 
-            // Send the user's message to themselves in real time.
-            await _chatHubService.SendMessageAsync(userId, messageDto);
 
             if (!string.IsNullOrWhiteSpace(conversation.AssignedAgentId))
             {
-                // Send the user's message to the other participant in real time.
-
                 string receiverId = userId == conversation.CustomerId
                     ? conversation.AssignedAgentId
                     : conversation.CustomerId;
 
                 await _chatHubService.SendMessageAsync(receiverId, messageDto);
-
 
                 // Notify the other participant about the new message.
                 var notification = new SendNotificationDto
@@ -187,6 +194,13 @@ namespace AiCustomerSupport.Infrastructure.Services
 
                 await _notificationService.SendAsync(notification);
             }
+
+            else
+            {
+                await _chatHubService.SendMessageAsync(userId, messageDto);
+            }
+
+
 
             if (aiMessage != null)
             {

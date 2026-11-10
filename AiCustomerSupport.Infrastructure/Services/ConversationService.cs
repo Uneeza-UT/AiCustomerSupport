@@ -197,7 +197,7 @@ namespace AiCustomerSupport.Infrastructure.Services
             {
                 ConversationId = conversation.Id,
                 ReceiverId = conversation.CustomerId,
-                Message = $"Your conversation {conversation.Title} has been assigned to" +
+                Message = $"Your conversation \"{conversation.Title}\" has been assigned to" +
                     $" {user.FirstName} {user.LastName}."
             });
 
@@ -296,14 +296,14 @@ namespace AiCustomerSupport.Infrastructure.Services
         public async Task<List<GetConversationDto>> SearchByIntentAsync(
             SearchDto dto, string userId, PaginationDto paginationDto)
         {
+            var (customerId, assignedAgentId, excludeDeleted) = GetConversationAuthorizationScope(userId);
+
             string searchTerm = dto.SearchTerm?.Trim();
 
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
                 return await GetByUserAsync(paginationDto, userId);
-            }
-
-            var (customerId, assignedAgentId, excludeDeleted) = GetConversationAuthorizationScope(userId);
+            }     
 
             var conversations = await _conversationRepository
                 .SearchByIntentAsync(
